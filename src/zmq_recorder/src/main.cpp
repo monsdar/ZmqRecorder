@@ -25,7 +25,7 @@ void receivedData(const std::string& data)
 int main()
 {
     //The receiver will connect itself to everything it needs
-    NetworkReceiver receiver;
+    NetworkReceiver receiver( std::string("tcp://localhost:15232") ); //TODO: Make this configurable
     receiver.setCallback(receivedData);
     receiver.startListening();
     std::cout << "Listening..." << std::endl;

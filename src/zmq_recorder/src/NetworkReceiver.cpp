@@ -7,13 +7,12 @@
 #include <sstream>
 #include <string>
 
-NetworkReceiver::NetworkReceiver() :
+NetworkReceiver::NetworkReceiver(const std::string& zmqAddress) :
     zmqContext_(new zmq::context_t(1)),
-    zmqListener_(new zmq::socket_t(*zmqContext_, ZMQ_PULL)),
+    zmqListener_(new zmq::socket_t(*zmqContext_, ZMQ_SUB)),
     isRunning_(false)
 {
-    //TODO: Make this configurable
-    zmqListener_->bind("tcp://*:15232");
+    zmqListener_->connect(zmqAddress.c_str());
 }
 
 NetworkReceiver::~NetworkReceiver()
