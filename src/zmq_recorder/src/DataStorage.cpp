@@ -55,7 +55,7 @@ void DataStorage::initDatabase(const std::string& filename)
         sqlite::command initPacketCommand(*connection_,
             "CREATE TABLE Packets ( "
             "   PacketId INTEGER PRIMARY KEY AUTOINCREMENT, "
-            "   Data TEXT UNIQUE, "
+            "   Data TEXT, "
             "   Timestamp INTEGER"
             ")");
 
