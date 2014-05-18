@@ -2,6 +2,8 @@
 #ifndef _DATA_STORAGE_H_
 #define _DATA_STORAGE_H_
 
+#include <boost/cstdint.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
 #include <sqlite3cc.h>
 
@@ -36,6 +38,10 @@ private:
      */
     std::string getCurrentDateStr();
     /**
+     * Returns the current time in microseconds as a int64_t timestamp
+     */
+    boost::int64_t getTimestamp();
+    /**
      * Adds the given data to the DB
      */
     void updateData(const std::string& data);
@@ -44,6 +50,11 @@ private:
      * This is the connection to the database
      */
     boost::shared_ptr<sqlite::connection> connection_;
+
+    /**
+     * Stores the time when the recorder has been started
+     */
+    boost::posix_time::ptime start_;
 
 };
 

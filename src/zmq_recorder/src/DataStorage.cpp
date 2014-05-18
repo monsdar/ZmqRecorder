@@ -8,7 +8,8 @@
 
 #include <stdlib.h> // needed for exit()
 
-DataStorage::DataStorage()
+DataStorage::DataStorage() :
+    start_( boost::posix_time::microsec_clock::local_time() )
 {
     //create a new database for each session
     std::string dbName = "session_" + getCurrentDateStr() + ".db";
@@ -104,7 +105,7 @@ void DataStorage::updateData(const std::string& data)
             ");");
 
         insertCommand.bind(1, data);
-        insertCommand.bind(2, 0); //TODO: Get the actual Timestamp
+        insertCommand.bind(2, getTimestamp()); //this gets the current timestamp
 
         //We do not use the error-code here, but it is good to know that there is one if we need it
         int errorNum = insertCommand.exec();
@@ -113,4 +114,10 @@ void DataStorage::updateData(const std::string& data)
     {
         std::cout << __FUNCTION__ << ": " << error.what() << std::endl;
     }
+}
+
+boost::int64_t DataStorage::getTimestamp()
+{
+    boost::posix_time::time_duration const diff = boost::posix_time::microsec_clock::local_time() - start_;
+    return diff.total_milliseconds();
 }
