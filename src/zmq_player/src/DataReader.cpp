@@ -20,16 +20,16 @@ DataReader::~DataReader()
     }
 }
 
-std::vector<std::string> DataReader::readData() const
+std::vector<zmq_player::Packet> DataReader::readData() const
 {
     if (!connection_)
     {
         std::cout << "ERROR: No database loaded..." << std::endl;
-        return std::vector<std::string>();
+        return std::vector<zmq_player::Packet>();
     }
 
     //This is the list of data which will be filled and returned to the user
-    std::vector<std::string> data;
+    std::vector<zmq_player::Packet> data;
 
     //Let's read the data from the DB
     try
@@ -38,10 +38,11 @@ std::vector<std::string> DataReader::readData() const
         sqlite::query::iterator queryIter = dataQuery.begin();
         for (; queryIter != dataQuery.end(); ++queryIter)
         {
-            data.push_back(queryIter->column< std::string >(0));
+            zmq_player::Packet newPacket;
+            newPacket.Data = queryIter->column< std::string >(0);
+            newPacket.Timestamp = queryIter->column< boost::int64_t >(1);
 
-            //TODO: The following reads the timestamp
-            //boost::int64_t timestamp = queryIter->column< boost::int64_t >(1);
+            data.push_back(newPacket);
         }
     }
     catch (sqlite::sqlite_error& error)

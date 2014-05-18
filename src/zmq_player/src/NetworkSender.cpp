@@ -17,7 +17,7 @@ NetworkSender::NetworkSender(const std::string& zmqAddress) :
 NetworkSender::~NetworkSender()
 {}
 
-void NetworkSender::send(std::string& data)
+void NetworkSender::send(const std::string& data)
 {
     zmqSender_->send(data.c_str(), data.size());
 }

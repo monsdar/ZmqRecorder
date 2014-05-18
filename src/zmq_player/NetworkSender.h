@@ -17,7 +17,7 @@ public:
     /**
      * Sends the given data to the endpoint given in the ctor
      */
-    void send(std::string& data);
+    void send(const std::string& data);
 
 private:
     boost::shared_ptr<zmq::context_t> zmqContext_;

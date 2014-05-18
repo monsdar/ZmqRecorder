@@ -2,6 +2,8 @@
 #ifndef _DATA_READER_H_
 #define _DATA_READER_H_
 
+#include "Packet.h"
+
 #include <boost/shared_ptr.hpp>
 #include <sqlite3cc.h>
 #include <vector>
@@ -20,7 +22,7 @@ public:
      * TODO: This ignores the timestamps...
      * TODO: This reads all the data at once, it should rather stream it...
      */
-    std::vector<std::string> readData() const;
+    std::vector<zmq_player::Packet> readData() const;
 
 private:
     /**
