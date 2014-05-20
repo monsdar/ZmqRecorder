@@ -10,11 +10,11 @@
 NetworkReceiver::NetworkReceiver(const std::string& zmqAddress, const std::string& envelope) :
     zmqContext_(new zmq::context_t(1)),
     zmqListener_(new zmq::socket_t(*zmqContext_, ZMQ_SUB)),
-    isRunning_(false)
+    isRunning_(false),
+    envelope_(envelope)
 {
-    std::string filter("ZmqNetworkLib"); //TODO: Make this configurable
     zmqListener_->connect(zmqAddress.c_str());
-    zmqListener_->setsockopt(ZMQ_SUBSCRIBE, filter.c_str(), filter.size());
+    zmqListener_->setsockopt(ZMQ_SUBSCRIBE, envelope_.c_str(), envelope_.size());
 }
 
 NetworkReceiver::~NetworkReceiver()
@@ -47,7 +47,7 @@ void NetworkReceiver::receive()
         if (data.size() != 0)
         {
             //do not store the envelope
-            if (data == "ZmqNetworkLib")
+            if (data == envelope_)
             {
                 continue;
             }

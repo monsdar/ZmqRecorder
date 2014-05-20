@@ -38,6 +38,7 @@ private:
      * Determines whether the receiving thread is running
      */
     bool isRunning_;
+    std::string envelope_;
 
     ReceiveCallback callback_;
     boost::shared_ptr<boost::thread> listenThread_;

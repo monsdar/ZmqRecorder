@@ -23,7 +23,7 @@ std::string getEnv(const std::string& envVariable)
 
 void receivedData(const std::string& data)
 {
-    std::cout << "Received Data..." << std::endl;
+    //std::cout << "Received Data..." << std::endl;
 
     //NOTE: The outcommented code is a very basic way to profile the code.
     //      What about using CxxProf here? How do we need to set up everything for this to work?
@@ -39,10 +39,10 @@ int main()
     std::string envEnvelope = getEnv("RECORD_ENVELOPE");
 
     //The receiver will connect itself to everything it needs
-    NetworkReceiver receiver( envAddress, envAddress);
+    NetworkReceiver receiver(envAddress, envEnvelope);
     receiver.setCallback(receivedData);
     receiver.startListening();
-    std::cout << "Listening..." << std::endl;
+    std::cout << "Listening to " << envAddress << " with envelope: " << envEnvelope << std::endl;
 
     //This is needed to keep the main-thread alive while the NetworkReceiver runs
     while(true)
