@@ -11,7 +11,7 @@
 class NetworkSender
 {
 public:
-    explicit NetworkSender(const std::string& zmqAddress);
+    NetworkSender(const std::string& zmqAddress, const std::string& envelope);
     virtual ~NetworkSender();
 
     /**
@@ -22,6 +22,7 @@ public:
 private:
     boost::shared_ptr<zmq::context_t> zmqContext_;
     boost::shared_ptr<zmq::socket_t> zmqSender_;
+    std::string envelope_;
 
 };
 

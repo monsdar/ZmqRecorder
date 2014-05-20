@@ -9,23 +9,42 @@
 #include <map>
 #include <iostream>
 
-DataReader reader_("test.db"); //TODO: Make this configurable
+boost::shared_ptr<DataReader> reader_;
+boost::shared_ptr<NetworkSender> sender_;
 Player player_;
-NetworkSender sender_(std::string("tcp://*:20002")); //TODO: Make this configurable
+
+
+std::string getEnv(const std::string& envVariable)
+{
+    const char * val = std::getenv(envVariable.c_str());
+    if (val == 0)
+    {
+        return "";
+    }
+
+    return val;
+}
 
 //this method will be called by our Player everytime the data should be send
 void triggerData(const std::string& data)
 {
-    sender_.send(data);
+    sender_->send(data);
 }
 
 int main()
 {
+    std::string envDatabase = getEnv("REPLAY_DATABASE");
+    std::string envAddress = getEnv("REPLAY_ADDRESS");
+    std::string envEnvelope = getEnv("REPLAY_ENVELOPE");
+
+    reader_.reset(new DataReader(envDatabase));
+    sender_.reset(new NetworkSender(envAddress, envEnvelope));
+
     std::cout << "Initing the Player..." << std::endl;
     player_.setCallback(triggerData);
 
     std::cout << "Reading the data..." << std::endl;
-    player_.appendNewData(reader_.readData());
+    player_.appendNewData(reader_->readData());
 
     std::cout << "Starting the player..." << std::endl;
     player_.start();
