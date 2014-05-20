@@ -8,8 +8,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-#include <zhelpers.hpp>
-
 class Player
 {
 public:
@@ -40,6 +38,11 @@ public:
      * forgotten (this allows to add data more memory friendly)
      */
     void start();
+
+    /**
+     * Return true if the player is currently running
+     */
+    bool isRunning();
 
 private:
 

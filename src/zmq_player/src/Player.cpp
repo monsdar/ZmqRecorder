@@ -7,6 +7,8 @@
 #include <sstream>
 #include <string>
 
+#include <zhelpers.hpp>
+
 Player::Player()
 {}
 
@@ -44,6 +46,7 @@ void Player::start()
 void Player::playLoop()
 {
     boost::posix_time::ptime start = boost::posix_time::microsec_clock::local_time();
+    std::cout << "Starting playLoop..." << std::endl;
 
     while (true)
     {
@@ -81,10 +84,19 @@ void Player::playLoop()
 
                 //erase the element from our list, it isn't needed anymore
                 dataQueue_.erase(currentElement);
+                //std::cout << "New queuesize: " << dataQueue_.size() << " (Timestamp: " << elapsedTime << ")" << std::endl;
             }
         }
 
         //interruption point to provide a break point for the CPU
         boost::this_thread::sleep(boost::posix_time::microseconds(0));
     }
+}
+
+bool Player::isRunning()
+{
+    //Just check if the queue is running, if this is the case, the player is not running anymore
+    //TODO: This approach does not work if the user intends to append more data during the run
+    boost::mutex::scoped_lock dataLock(dataMutex_);
+    return !dataQueue_.empty();
 }
