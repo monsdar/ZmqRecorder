@@ -12,7 +12,9 @@ NetworkReceiver::NetworkReceiver(const std::string& zmqAddress) :
     zmqListener_(new zmq::socket_t(*zmqContext_, ZMQ_SUB)),
     isRunning_(false)
 {
+    std::string filter("ZmqNetworkLib"); //TODO: Make this configurable
     zmqListener_->connect(zmqAddress.c_str());
+    zmqListener_->setsockopt(ZMQ_SUBSCRIBE, filter.c_str(), filter.size());
 }
 
 NetworkReceiver::~NetworkReceiver()
@@ -44,6 +46,12 @@ void NetworkReceiver::receive()
         std::string data = s_recv(*zmqListener_);
         if (data.size() != 0)
         {
+            //do not store the envelope
+            if (data == "ZmqNetworkLib")
+            {
+                continue;
+            }
+
             if (callback_)
             {
                 //TODO: The call to the callback is blocking, it could take a lot of time to
