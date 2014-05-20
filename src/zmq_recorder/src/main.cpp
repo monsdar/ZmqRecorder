@@ -10,6 +10,17 @@
 
 DataStorage storage_;
 
+std::string getEnv(const std::string& envVariable)
+{
+    const char * val = std::getenv(envVariable.c_str());
+    if (val == 0)
+    {
+        return "";
+    }
+
+    return val;
+}
+
 void receivedData(const std::string& data)
 {
     std::cout << "Received Data..." << std::endl;
@@ -24,8 +35,11 @@ void receivedData(const std::string& data)
 
 int main()
 {
+    std::string envAddress = getEnv("RECORD_ADDRESS");
+    std::string envEnvelope = getEnv("RECORD_ENVELOPE");
+
     //The receiver will connect itself to everything it needs
-    NetworkReceiver receiver( std::string("tcp://localhost:15232") ); //TODO: Make this configurable
+    NetworkReceiver receiver( envAddress, envAddress);
     receiver.setCallback(receivedData);
     receiver.startListening();
     std::cout << "Listening..." << std::endl;

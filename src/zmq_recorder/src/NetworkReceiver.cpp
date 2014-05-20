@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-NetworkReceiver::NetworkReceiver(const std::string& zmqAddress) :
+NetworkReceiver::NetworkReceiver(const std::string& zmqAddress, const std::string& envelope) :
     zmqContext_(new zmq::context_t(1)),
     zmqListener_(new zmq::socket_t(*zmqContext_, ZMQ_SUB)),
     isRunning_(false)

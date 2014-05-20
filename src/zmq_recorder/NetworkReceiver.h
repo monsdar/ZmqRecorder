@@ -14,7 +14,7 @@ public:
     typedef boost::function1<void, const std::string&> ReceiveCallback;
 
 public:
-    explicit NetworkReceiver(const std::string& zmqAddress);
+    NetworkReceiver(const std::string& zmqAddress, const std::string& envelope);
     virtual ~NetworkReceiver();
 
     /**
