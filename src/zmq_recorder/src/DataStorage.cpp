@@ -119,5 +119,5 @@ void DataStorage::updateData(const std::string& data)
 boost::int64_t DataStorage::getTimestamp()
 {
     boost::posix_time::time_duration const diff = boost::posix_time::microsec_clock::local_time() - start_;
-    return diff.total_milliseconds();
+    return diff.total_microseconds();
 }
