@@ -19,5 +19,6 @@ NetworkSender::~NetworkSender()
 
 void NetworkSender::send(const std::string& data)
 {
-    zmqSender_->send(data.c_str(), data.size());
+    s_sendmore(*zmqSender_, "ZmqNetworkLib");
+    s_send(*zmqSender_, data);
 }
