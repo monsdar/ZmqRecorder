@@ -11,7 +11,7 @@
 
 DataReader reader_("test.db"); //TODO: Make this configurable
 Player player_;
-NetworkSender sender_(std::string("tcp://*:15232")); //TODO: Make this configurable
+NetworkSender sender_(std::string("tcp://*:20002")); //TODO: Make this configurable
 
 //this method will be called by our Player everytime the data should be send
 void triggerData(const std::string& data)
@@ -29,6 +29,12 @@ int main()
 
     std::cout << "Starting the player..." << std::endl;
     player_.start();
+
+    //This is needed to keep the main-thread alive while the Player runs
+    while (player_.isRunning())
+    {
+        boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+    }
 
     return 0;
 }
