@@ -9,7 +9,6 @@
 #include <stdlib.h> // needed for exit()
 
 DataStorage::DataStorage() :
-    start_( boost::posix_time::microsec_clock::local_time() ),
     isRunning_(false)
 {
     //create a new database for each session
@@ -86,12 +85,16 @@ void DataStorage::storeData(const std::string& data)
         return;
     }
 
+    zmq_recorder::Packet newPacket;
+    newPacket.Data = data;
+    newPacket.Timestamp = getTimestamp();
+
     boost::mutex::scoped_lock lock(storageMutex_);
-    dataQueue_.push_back(data);
+    dataQueue_.push_back(newPacket);
     queueEmptyCondition_.notify_all(); //notify the thread that we finally have data
 }
 
-void DataStorage::updateData(const std::string& data)
+void DataStorage::updateData(const zmq_recorder::Packet& data)
 {
     try
     {
@@ -104,8 +107,8 @@ void DataStorage::updateData(const std::string& data)
             "? " //Timestamp
             ");");
 
-        insertCommand.bind(1, data);
-        insertCommand.bind(2, getTimestamp()); //this gets the current timestamp
+        insertCommand.bind(1, data.Data);
+        insertCommand.bind(2, data.Timestamp); //this gets the current timestamp
 
         //We do not use the error-code here, but it is good to know that there is one if we need it
         int errorNum = insertCommand.exec();
@@ -138,7 +141,7 @@ void DataStorage::storageLoop()
             //Simple explanation: If we do not wrap everything into a transaction here the performance would be VERY bad
             sqlite::transaction_guard< > transactionGuard(*connection_);
 
-            std::vector<std::string>::iterator dataIter = dataQueue_.begin();
+            std::vector<zmq_recorder::Packet>::iterator dataIter = dataQueue_.begin();
             for (; dataIter != dataQueue_.end(); ++dataIter)
             {
                 updateData(*dataIter);
@@ -150,7 +153,7 @@ void DataStorage::storageLoop()
             transactionGuard.commit();
         }
 
-        std::cout << "Stored " << numPackets << " packet(s)" << std::endl; 
+        std::cout << getCurrentDateStr() << ": Stored " << numPackets << " packet(s)" << std::endl;
 
         //sleep some time, this avoids that we do too many transmissions to the database at once
         //it also frees up some time for the CPU
@@ -160,6 +163,12 @@ void DataStorage::storageLoop()
 
 boost::int64_t DataStorage::getTimestamp()
 {
-    boost::posix_time::time_duration const diff = boost::posix_time::microsec_clock::local_time() - start_;
+    //init the starttime as it is needed for the first time
+    if (!start_)
+    {
+        start_.reset(new boost::posix_time::ptime(boost::posix_time::microsec_clock::local_time()));
+    }
+
+    boost::posix_time::time_duration const diff = boost::posix_time::microsec_clock::local_time() - *start_;
     return diff.total_microseconds();
 }

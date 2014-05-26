@@ -2,6 +2,8 @@
 #ifndef _DATA_STORAGE_H_
 #define _DATA_STORAGE_H_
 
+#include "zmq_recorder/Packet.h"
+
 #include <boost/cstdint.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
@@ -45,7 +47,7 @@ private:
     /**
      * Adds the given data to the DB
      */
-    void updateData(const std::string& data);
+    void updateData(const zmq_recorder::Packet& data);
     /**
      * Stores the data
      */
@@ -59,7 +61,7 @@ private:
     /**
      * Stores the time when the recorder has been started
      */
-    boost::posix_time::ptime start_;
+    boost::shared_ptr<boost::posix_time::ptime> start_;
 
     /**
      * This thread stores the given data periodically
@@ -72,7 +74,7 @@ private:
     /**
      * Holds the data until it is stored
      */
-    std::vector<std::string> dataQueue_;
+    std::vector<zmq_recorder::Packet> dataQueue_;
     /**
      * This condition variable waits until data has been received
      */
