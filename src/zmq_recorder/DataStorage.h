@@ -5,6 +5,7 @@
 #include <boost/cstdint.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/thread/thread.hpp>
 #include <sqlite3cc.h>
 
 class DataStorage
@@ -45,6 +46,10 @@ private:
      * Adds the given data to the DB
      */
     void updateData(const std::string& data);
+    /**
+     * Stores the data
+     */
+    void storageLoop();
 
     /**
      * This is the connection to the database
@@ -55,6 +60,27 @@ private:
      * Stores the time when the recorder has been started
      */
     boost::posix_time::ptime start_;
+
+    /**
+     * This thread stores the given data periodically
+     */
+    boost::shared_ptr<boost::thread> storageThread_;
+    /**
+     * Secures the data
+     */
+    boost::mutex storageMutex_;
+    /**
+     * Holds the data until it is stored
+     */
+    std::vector<std::string> dataQueue_;
+    /**
+     * This condition variable waits until data has been received
+     */
+    boost::condition_variable queueEmptyCondition_;
+    /**
+     * Determines whether the storageThread is running or not
+     */
+    bool isRunning_;
 
 };
 

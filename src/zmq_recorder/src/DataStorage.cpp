@@ -9,7 +9,8 @@
 #include <stdlib.h> // needed for exit()
 
 DataStorage::DataStorage() :
-    start_( boost::posix_time::microsec_clock::local_time() )
+    start_( boost::posix_time::microsec_clock::local_time() ),
+    isRunning_(false)
 {
     //create a new database for each session
     std::string dbName = "session_" + getCurrentDateStr() + ".db";
@@ -22,10 +23,15 @@ DataStorage::DataStorage() :
     {
         initDatabase(dbName);
     }
+
+    //start the storagethread
+    storageThread_.reset(new boost::thread(boost::bind(&DataStorage::storageLoop, this)));
 }
 
 DataStorage::~DataStorage()
 {
+    isRunning_ = false;
+
     if (connection_)
     {
         connection_->close();
@@ -80,15 +86,9 @@ void DataStorage::storeData(const std::string& data)
         return;
     }
 
-    //create a deferred transaction for the following commands
-    //Simple explanation: If we do not wrap everything into a transaction here the performance would be VERY bad
-    sqlite::transaction_guard< > transactionGuard(*connection_);
-
-    //Add the data to the packets
-    updateData(data);
-
-    //commit the transaction (or it will rollback)
-    transactionGuard.commit();
+    boost::mutex::scoped_lock lock(storageMutex_);
+    dataQueue_.push_back(data);
+    queueEmptyCondition_.notify_all(); //notify the thread that we finally have data
 }
 
 void DataStorage::updateData(const std::string& data)
@@ -113,6 +113,48 @@ void DataStorage::updateData(const std::string& data)
     catch (sqlite::sqlite_error& error)
     {
         std::cout << __FUNCTION__ << ": " << error.what() << std::endl;
+    }
+}
+
+void DataStorage::storageLoop()
+{
+    isRunning_ = true;
+    while (isRunning_)
+    {
+        //wait until we have data in our queue
+        {
+            boost::mutex::scoped_lock dataLock(storageMutex_);
+            while (dataQueue_.empty())
+            {
+                queueEmptyCondition_.wait(dataLock);
+            }
+        }
+
+        //lock the data again for as long as we're storing it
+        unsigned int numPackets = 0;
+        {
+            boost::mutex::scoped_lock dataLock(storageMutex_);
+            //create a deferred transaction for the following commands
+            //Simple explanation: If we do not wrap everything into a transaction here the performance would be VERY bad
+            sqlite::transaction_guard< > transactionGuard(*connection_);
+
+            std::vector<std::string>::iterator dataIter = dataQueue_.begin();
+            for (; dataIter != dataQueue_.end(); ++dataIter)
+            {
+                updateData(*dataIter);
+            }
+            numPackets = dataQueue_.size();
+            dataQueue_.clear();
+
+            //commit the transaction (or it will rollback)
+            transactionGuard.commit();
+        }
+
+        std::cout << "Stored " << numPackets << " packet(s)" << std::endl; 
+
+        //sleep some time, this avoids that we do too many transmissions to the database at once
+        //it also frees up some time for the CPU
+        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
     }
 }
 
